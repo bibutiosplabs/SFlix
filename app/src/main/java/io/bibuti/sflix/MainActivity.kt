@@ -1,12 +1,18 @@
 package io.bibuti.sflix
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
+    private val TAG = "MainActivity"
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,8 +22,11 @@ class MainActivity : AppCompatActivity() {
             settings.javaScriptCanOpenWindowsAutomatically = true
             settings.domStorageEnabled = true
             settings.loadsImagesAutomatically = true
+            settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+            settings.useWideViewPort = true
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(wView: WebView, url: String): Boolean {
+                    Log.d(TAG, "shouldOverrideUrlLoading: -> $url")
                     return if (url == "https://sflix.to/") //check if that's a url you want to load internally
                     {
                         loadUrl("https://sflix.to/home")
@@ -27,7 +36,22 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            webChromeClient = WebChromeClient()
             loadUrl("https://sflix.to/home")
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        findViewById<WebView>(R.id.webRoot)?.apply {
+            saveState(outState)
+        }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        findViewById<WebView>(R.id.webRoot)?.apply {
+            restoreState(savedInstanceState)
         }
     }
 
